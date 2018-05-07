@@ -12,7 +12,7 @@ class UIState
     @activity = activity
     @end_time = current_week_end
     @week = []
-    n = 6
+    n = 4
     while n >= 0
       daytime = @end_time - (n*86400)
       week[n] = mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
@@ -44,6 +44,8 @@ class UIState
   end
 
   def day_range(range)
+    return "Off" if range.nil?
+
     "#{range[0].hour.to_s.rjust(2,'0')}:#{range[0].min.to_s.rjust(2,'0')} - " +
         "#{range[1].hour.to_s.rjust(2,'0')}:#{range[1].min.to_s.rjust(2,'0')}"
   end
@@ -57,15 +59,15 @@ class UIState
 
   def update_display_values
     newarr = [
-        "Monday: " + day_range(week[0]),
-        "Tuesday: " + day_range(week[1]),
-        "Wednesday: " + day_range(week[2]),
-        "Thursday: " + day_range(week[3]),
-        "Friday: " + day_range(week[4]),
-        "Saturday: " + day_range(week[5]),
-        "Sunday: " + day_range(week[6]),
-        "Week Ending: #{end_time.day} #{MONTH[end_time.month]}",
-        "Send"
+        [day_range(week[0]), "Monday"],
+        [day_range(week[1]), "Tuesday"],
+        [day_range(week[2]), "Wednesday"],
+        [day_range(week[3]), "Thursday"],
+        [day_range(week[4]), "Friday"],
+        [day_range(week[5]), "Saturday"],
+        [day_range(week[6]), "Sunday"],
+        ["#{end_time.day} #{MONTH[end_time.month]}", "Week Ending"],
+        ["Send",""]
     ]
     newarr.each_with_index {|obj,n| @display[n] = obj}
     @display

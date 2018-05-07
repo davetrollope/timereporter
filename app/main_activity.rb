@@ -16,7 +16,7 @@ class MainActivity < Android::App::Activity
   end
 
   def adapter
-    @adapter ||= Android::Widget::ArrayAdapter.new(self, Android::R::Layout::Simple_list_item_1, uistate.display_values)
+    @adapter ||= TwoLineAdapter.new
   end
 
   def onItemClick(parent, view, position, id)
@@ -43,5 +43,35 @@ class MainActivity < Android::App::Activity
         Toast.makeText(self, "There are no email clients installed.", Toast::LENGTH_SHORT).show();
       end
     end
+  end
+end
+
+class TwoLineAdapter < Android::Widget::BaseAdapter
+  def getCount()
+    UIState.current.display_values.size
+  end
+
+  def getItem(position)
+    UIState.current.display_values[position][1]
+  end
+
+  def getItemId(position)
+    position
+  end
+
+  def getView(position, convertView, parent)
+    context = parent.context
+    textView1 = Android::Widget::TextView.new(context)
+    textView1.text = UIState.current.display_values[position][0]
+    textView1.textSize = 32
+
+    textView2 = Android::Widget::TextView.new(context)
+    textView2.text = UIState.current.display_values[position][1]
+
+    layout = Android::Widget::LinearLayout.new(context)
+    layout.orientation = Android::Widget::LinearLayout::VERTICAL
+    layout.addView(textView1,  Android::Widget::LinearLayout::LayoutParams.new(Android::View::ViewGroup::LayoutParams::WRAP_CONTENT, Android::View::ViewGroup::LayoutParams::WRAP_CONTENT))
+    layout.addView(textView2,  Android::Widget::LinearLayout::LayoutParams.new(Android::View::ViewGroup::LayoutParams::MATCH_PARENT, Android::View::ViewGroup::LayoutParams::WRAP_CONTENT))
+    layout
   end
 end
