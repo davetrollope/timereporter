@@ -1,24 +1,32 @@
+
 class UIState
   class << self
-    attr_accessor :current
+    def current_state
+      @@current_state
+    end
+    def current_state=(val)
+      @@current_state = val
+    end
   end
 
   attr_accessor :day_of_week, :hour, :minute, :time_type,
                 :start_hour, :start_minute, :end_hour, :end_minute,
-                :end_time, :week,
+                :end_time, :week, :day_state,
                 :activity
 
-  def initialize(activity)
-    @activity = activity
+  def initialize(an_activity)
+    @activity = an_activity
     @end_time = current_week_end
     @week = []
+    @day_state = []
     n = 4
     while n >= 0
       daytime = @end_time - (n*86400)
       week[n] = mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
+      day_state[n] = :working
       n -= 1
     end
-    UIState.current = self
+    UIState.current_state = self
   end
 
   def mk_day(year, month, day, start_hour, start_min, end_hour, end_min)
@@ -35,6 +43,10 @@ class UIState
     @time_type = time_type
   end
 
+  def update_day_state(position)
+    day_state[position] = day_state[position] ? nil : :working
+  end
+
   def current_week_end
     t = Time.now
     while t.wday != 0 do
@@ -44,12 +56,13 @@ class UIState
   end
 
   def day_range(range)
-    return "Off" if range.nil?
-
     "#{range[0].hour.to_s.rjust(2,'0')}:#{range[0].min.to_s.rjust(2,'0')} - " +
         "#{range[1].hour.to_s.rjust(2,'0')}:#{range[1].min.to_s.rjust(2,'0')}"
   end
 
+  def day_primary_text(position)
+    day_state[position] == :working ? day_range(week[position]) : "Off"
+  end
   MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
   def display_values
@@ -59,17 +72,17 @@ class UIState
 
   def update_display_values
     newarr = [
-        [day_range(week[0]), "Monday"],
-        [day_range(week[1]), "Tuesday"],
-        [day_range(week[2]), "Wednesday"],
-        [day_range(week[3]), "Thursday"],
-        [day_range(week[4]), "Friday"],
-        [day_range(week[5]), "Saturday"],
-        [day_range(week[6]), "Sunday"],
-        ["#{end_time.day} #{MONTH[end_time.month]}", "Week Ending"],
-        ["Send",""]
+      {primary: day_primary_text(0), secondary: "Monday", state: day_state[0]},
+      {primary: day_primary_text(1), secondary: "Tuesday", state: day_state[1]},
+      {primary: day_primary_text(2), secondary: "Wednesday", state: day_state[2]},
+      {primary: day_primary_text(3), secondary: "Thursday", state: day_state[3]},
+      {primary: day_primary_text(4), secondary: "Friday", state: day_state[4]},
+      {primary: day_primary_text(5), secondary: "Saturday", state: day_state[5]},
+      {primary: day_primary_text(6), secondary: "Sunday", state: day_state[6]},
+      {primary: "#{end_time.day} #{MONTH[end_time.month]}", secondary: "Week Ending"},
+      {primary: "Send", secondary: ""}
     ]
-    newarr.each_with_index {|obj,n| @display[n] = obj}
+    newarr.each_with_index {|obj, n| @display[n] = obj}
     @display
   end
 end
