@@ -32,9 +32,9 @@ class TRWeekPicker < Android::App::DialogFragment
   end
 
   def onItemClick(parent, view, position, id)
-    puts "Clicked week #{position} #{@week_list[position]}"
     uistate = UIState.current_state
-    uistate.end_time = date_format.parse(@week_list[position])
+    date = date_format.parse(@week_list[position])
+    uistate.end_time = Time.new(date.year + 1900, date.month, date.date)
     uistate.update_display_values
     uistate.activity.adapter.notifyDataSetChanged()
     self.dismiss

@@ -20,7 +20,6 @@ class MainActivity < Android::App::Activity
   end
 
   def onItemClick(parent, view, position, id)
-    puts "Clicked #{position}"
     if position < 7
       # Display time picker
       uistate.update_day position, uistate.week[position][0].hour, uistate.week[position][0].min, :start
@@ -81,14 +80,12 @@ class TwoLineAdapter < Android::Widget::BaseAdapter
   end
 
   def onCheckedChanged(button, isChecked)
-    puts "Checked #{isChecked} #{button} position #{self.button_map.indexOf(button)}"
     context.toggle_state(self.button_map.indexOf(button))
     UIState.current_state.activity.adapter.notifyDataSetChanged()
 
   end
 
   def onClick(view)
-    puts "CLICK position #{self.text_map.indexOf(view)}"
     context.onItemClick(self.context, view, self.text_map.indexOf(view), nil)
   end
 

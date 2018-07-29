@@ -19,6 +19,8 @@ class UIState
     @end_time = current_week_end
     @week = []
     @day_state = []
+
+    # FIXME - this loop is calculating the wrong day... end_time - 4 is not monday
     n = 4
     while n >= 0
       daytime = @end_time - (n*86400)
@@ -26,13 +28,18 @@ class UIState
       day_state[n] = :working
       n -= 1
     end
+    daytime = @end_time - (5*86400)
+    week[5] = mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
+    daytime = @end_time - (6*86400)
+    week[6] = mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
+
     UIState.current_state = self
   end
 
   def mk_day(year, month, day, start_hour, start_min, end_hour, end_min)
     [
-        Time.new(year, month, day, start_hour, start_min),
-        Time.new(year, month, day, end_hour, end_min)
+      Time.new(year, month, day, start_hour, start_min),
+      Time.new(year, month, day, end_hour, end_min)
     ]
   end
 
@@ -83,7 +90,7 @@ class UIState
       {primary: day_primary_text(4), secondary: "Friday", state: day_state[4]},
       {primary: day_primary_text(5), secondary: "Saturday", state: day_state[5]},
       {primary: day_primary_text(6), secondary: "Sunday", state: day_state[6]},
-      {primary: "#{end_time.day} #{MONTH[end_time.month]}", secondary: "Week Ending"},
+      {primary: "#{end_time.day} #{MONTH[end_time.month - 1]}", secondary: "Week Ending"},
       {primary: "Send", secondary: ""}
     ]
     newarr.each_with_index {|obj, n| @display[n] = obj}
