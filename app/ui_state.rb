@@ -23,7 +23,6 @@ class UIState
     n = 6
     while n >= 0
       daytime = @end_time - ((6 - n) * 86400)
-      puts "DAY #{n} #{daytime.day}"
       week[n] = mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
       day_state[n] = :working if n < 5
       n -= 1
