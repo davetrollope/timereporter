@@ -47,6 +47,10 @@ class UIState
     day_state[position] = day_state[position] ? nil : :working
   end
 
+  def update_week_end(new_end)
+    @end_time = Time.parse(new_end)
+  end
+
   def current_week_end
     t = Time.now
     while t.wday != 0 do

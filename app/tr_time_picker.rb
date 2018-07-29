@@ -20,7 +20,6 @@ class TRTimePicker < Android::App::DialogFragment
   def onTimeSet(view, hour, minute)
     uistate = UIState.current_state
     puts "methods #{uistate.methods}"
-    puts "SET #{uistate} #{uistate.activity}"
     if uistate.time_type == :start
       day = uistate.week[uistate.day_of_week]
 
@@ -28,7 +27,7 @@ class TRTimePicker < Android::App::DialogFragment
       uistate.start_minute = minute
       uistate.update_day uistate.day_of_week, day[1].hour, day[1].min, :end
       time_picker = TRTimePicker.new
-      time_picker.show(fragmentManager,"endTimePicker")
+      time_picker.show(fragmentManager, "endTimePicker")
       return
     end
 

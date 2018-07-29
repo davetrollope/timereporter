@@ -29,6 +29,12 @@ class MainActivity < Android::App::Activity
       return
     end
 
+    if position == 7
+      week_picker = TRWeekPicker.new
+      week_picker.show(getFragmentManager, "startWeekPicker")
+      return
+    end
+
     if position == 8
       email_body = ""
       display = UIState.current_state.display_values
