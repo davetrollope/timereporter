@@ -8,7 +8,7 @@ class TRTimePicker < Android::App::DialogFragment
     day = uistate.week[uistate.day_of_week]
     entry_num = uistate.time_type == :start ? 0 : 1
 
-    tpd = TimePickerDialog.new(getActivity(), self, day[entry_num].hour, day[entry_num].min, true)
+    tpd = TimePickerDialog.new(getActivity, self, day[entry_num].hour, day[entry_num].min, true)
     if uistate.time_type == :start
       tpd.setTitle('Start Time')
     else
@@ -39,6 +39,7 @@ class TRTimePicker < Android::App::DialogFragment
                                                        uistate.start_hour, uistate.start_minute,
                                                        uistate.end_hour, uistate.end_minute)
 
+    uistate.update_day_state(uistate.day_of_week) if uistate.day_state[uistate.day_of_week] != :working
     uistate.update_display_values
     uistate.activity.adapter.notifyDataSetChanged()
   end

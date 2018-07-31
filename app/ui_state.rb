@@ -12,13 +12,14 @@ class UIState
   attr_accessor :day_of_week, :hour, :minute, :time_type,
                 :start_hour, :start_minute, :end_hour, :end_minute,
                 :end_time, :week, :day_state,
-                :activity
+                :activity, :reporting_email
 
   def initialize(an_activity)
     @activity = an_activity
     @end_time = current_week_end
     @week = []
     @day_state = []
+    @reporting_email = ''
 
     n = 6
     while n >= 0
@@ -55,7 +56,7 @@ class UIState
 
   def current_week_end
     t = Time.now
-    while t.wday != 0 do
+    while t.wday != 0
       t += 86400 # 1 day
     end
     t

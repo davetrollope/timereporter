@@ -35,27 +35,32 @@ class MainActivity < Android::App::Activity
     end
 
     if position == 8
-      email_body = ""
-      display = UIState.current_state.display_values
+      email_input = TREmailInput.new
+      email_input.show(getFragmentManager, "startEmailInput")
+    end
+  end
 
-      display.each_with_index {|display, n|
-        if n <= 6
-          email_body += display[:secondary] + ": " + display[:primary] + "\n"
-        end
-      }
-      puts email_body
-      begin
-        intent = Intent.new(Intent::ACTION_SENDTO)
-        intent.setType("message/rfc822")
-        intent.putExtra(Intent::EXTRA_EMAIL, ["paul@pdbrickwork.com"])
-        intent.putExtra(Intent::EXTRA_SUBJECT, "Time Report")
-        intent.putExtra(Intent::EXTRA_TEXT, email_body)
-        Toast.makeText(self, "Switching to email", Toast::LENGTH_SHORT).show();
+  def send_email
+    email_body = ''
+    display = UIState.current_state.display_values
 
-        startActivity(Intent.createChooser(intent, "Send mail..."))
-      rescue Android::Content::ActivityNotFoundException
-        Toast.makeText(self, "There are no email clients installed.", Toast::LENGTH_SHORT).show();
+    display.each_with_index {|display, n|
+      if n <= 6
+        email_body += display[:secondary] + ": " + display[:primary] + "\n"
       end
+    }
+    puts email_body
+    begin
+      intent = Intent.new(Intent::ACTION_SENDTO)
+      intent.setType("message/rfc822")
+      intent.putExtra(Intent::EXTRA_EMAIL, [uistate.reporting_email])
+      intent.putExtra(Intent::EXTRA_SUBJECT, "Time Report")
+      intent.putExtra(Intent::EXTRA_TEXT, email_body)
+      Toast.makeText(self, "Switching to email", Toast::LENGTH_SHORT).show();
+
+      startActivity(Intent.createChooser(intent, "Send mail..."))
+    rescue Android::Content::ActivityNotFoundException
+      Toast.makeText(self, "There are no email clients installed.", Toast::LENGTH_SHORT).show();
     end
   end
 

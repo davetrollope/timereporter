@@ -19,16 +19,19 @@ class TRWeekPicker < Android::App::DialogFragment
   end
 
   def adapter
-    now = Java::Util::Date.new
-
-    @week_list = [-4, -3, -2, -1, 0, 1].map {|offset|
-      cal = Java::Util::Calendar.getInstance
-      cal.setTime(now)
-      cal.add(Java::Util::Calendar::WEEK_OF_YEAR, offset)
+    # Why didn't I just use Time as in UIState?
+    cal = Java::Util::Calendar.getInstance
+    # Move to Sunday
+    while cal.wday != 0
+      cal.add(Java::Util::Calendar::DAY_OF_YEAR, 1)
+    end
+    cal.add(Java::Util::Calendar::WEEK_OF_YEAR, -5)
+    @week_list = Array.new(6).map {
+      cal.add(Java::Util::Calendar::WEEK_OF_YEAR, 1)
       date_format.format(cal.getTime)
     }
 
-    Android::Widget::ArrayAdapter.new(UIState.current_state.activity, Android::R::Layout::Simple_list_item_1, @week_list)
+    Android::Widget::ArrayAdapter.new(getActivity, Android::R::Layout::Simple_list_item_1, @week_list)
   end
 
   def onItemClick(parent, view, position, id)
