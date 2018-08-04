@@ -5,7 +5,7 @@ class MainActivity < Android::App::Activity
   attr_accessor :uistate, :display
 
   def onCreate(savedInstanceState)
-    @storage = TRStorage.new
+    @storage = TRStorage.new self
     @uistate = UIState.new(self)
     super
 

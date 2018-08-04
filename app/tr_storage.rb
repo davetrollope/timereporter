@@ -1,16 +1,20 @@
 class TRStorage
-  attr_reader :weeks
 
-  def initialize
-    # Will load existing stored data, but for now, all new.
-    @weeks = {}
+  def initialize(context)
+    load_data context
   end
 
-  def set_week_of(week_ending, day, start_hour, start_minute, end_hour, end_minute)
-    weeks[week_ending] = {:position => [start_hour, start_minute, end_hour, end_minute]}
+  def load_data(context)
+    dirlist = context.fileList()
+    if dirlist.include? 'data.json'
+      input_file = context.openFileInput('data.json')
+    else
+      # Nothing to do
+      puts "No data to load"
+    end
   end
 
-  def default_day
-    [8, 0, 5, 0]
+  def save_state
+
   end
 end

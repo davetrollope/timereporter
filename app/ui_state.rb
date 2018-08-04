@@ -92,4 +92,20 @@ class UIState
     newarr.each_with_index {|obj, n| @display[n] = obj}
     @display
   end
+
+  def week_hash
+    {
+        week_end: end_time,
+        days: display_values.map do |display_value|
+          { text: display_value[:primary], state: display_value[:state] }
+        end
+    }
+  end
+
+  def static_hash
+    {
+      reporting_email: reporting_email,
+      current_week: end_time
+    }
+  end
 end
