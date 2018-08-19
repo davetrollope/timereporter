@@ -60,18 +60,6 @@ class TRStorage
     { week: nil, daytime: nil }
   end
 
-  def get_reporting_email
-    return nil if @static_json.nil?
-
-    @static_json['reporting_email']
-  end
-
-  def get_static_week_end
-    return nil if @static_json.nil?
-
-    @static_json['current_week']
-  end
-
   def save_static_state
     uistate = UIState.current
     @end_time = uistate.end_time
@@ -96,7 +84,7 @@ class TRStorage
     # static_file.write(static_str.getBytes)
     osw = Java::IO::OutputStreamWriter.new(json_file)
     osw.write(json_str, 0, json_str.length)
-    puts "WROTE #{json_str}"
+    #puts "WROTE #{json_str}"
 
     osw.close()
     json_file.close()

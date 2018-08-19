@@ -16,13 +16,13 @@ class UIState
 
   def initialize(an_activity)
     @activity = an_activity
-    @reporting_email = activity.storage.get_reporting_email
     @static_json = activity.storage.load_static_data
 
-    if @static_json && @static_json['current_week']
-      @end_time = UIState.parse_week_end(@static_json['current_week'])
+    @reporting_email = @static_json && @static_json['reporting_email'] ? @static_json['reporting_email'] : ''
+    @end_time = if @static_json && @static_json['current_week']
+      UIState.parse_week_end(@static_json['current_week'])
     else
-      @end_time = current_week_end
+      current_week_end
     end
 
     load_week @static_json['current_week']
@@ -123,11 +123,9 @@ class UIState
 
   def switch_weeks(new_week_id)
     @end_time = UIState.parse_week_end(new_week_id)
-    puts "SWITCH #{end_time}"
     activity.storage.save_static_state
     @static_json['current_week'] = new_week_id
     load_week new_week_id
-    puts "SWITCH II #{end_time}"
     update_display_values
     activity.adapter.notifyDataSetChanged()
   end
