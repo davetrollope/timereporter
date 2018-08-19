@@ -1,7 +1,7 @@
 class TRWeekPicker < Android::App::DialogFragment
 
   def onCreateDialog(savedInstanceState)
-    uistate = UIState.current_state
+    uistate = UIState.current
 
     list = Android::Widget::ListView.new(uistate.activity)
     list.adapter = adapter
@@ -14,10 +14,6 @@ class TRWeekPicker < Android::App::DialogFragment
     dialog
   end
 
-  def date_format
-    @dateformat ||= Java::Text::SimpleDateFormat.new("MMM dd, yyyy")
-  end
-
   def adapter
     # Why didn't I just use Time as in UIState?
     cal = Java::Util::Calendar.getInstance
@@ -28,18 +24,14 @@ class TRWeekPicker < Android::App::DialogFragment
     cal.add(Java::Util::Calendar::WEEK_OF_YEAR, -5)
     @week_list = Array.new(6).map {
       cal.add(Java::Util::Calendar::WEEK_OF_YEAR, 1)
-      date_format.format(cal.getTime)
+      UIState.date_format.format(cal.getTime)
     }
 
     Android::Widget::ArrayAdapter.new(getActivity, Android::R::Layout::Simple_list_item_1, @week_list)
   end
 
   def onItemClick(parent, view, position, id)
-    uistate = UIState.current_state
-    date = date_format.parse(@week_list[position])
-    uistate.end_time = Time.new(date.year + 1900, date.month, date.date)
-    uistate.update_display_values
-    uistate.activity.adapter.notifyDataSetChanged()
+    UIState.current.switch_weeks @week_list[position]
     self.dismiss
   end
 end

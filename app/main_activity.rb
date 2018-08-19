@@ -2,7 +2,7 @@ Toast = Android::Widget::Toast
 Intent = Android::Content::Intent
 
 class MainActivity < Android::App::Activity
-  attr_accessor :uistate, :display
+  attr_accessor :uistate, :display, :storage
 
   def onCreate(savedInstanceState)
     @storage = TRStorage.new self
@@ -29,12 +29,14 @@ class MainActivity < Android::App::Activity
     end
 
     if position == 7
+      storage.save_week_state
       week_picker = TRWeekPicker.new
       week_picker.show(getFragmentManager, "startWeekPicker")
       return
     end
 
     if position == 8
+      storage.save_week_state
       email_input = TREmailInput.new
       email_input.show(getFragmentManager, "startEmailInput")
     end
@@ -42,7 +44,7 @@ class MainActivity < Android::App::Activity
 
   def send_email
     email_body = ''
-    display = UIState.current_state.display_values
+    display = UIState.current.display_values
 
     display.each_with_index {|display, n|
       if n <= 6
@@ -73,11 +75,11 @@ class TwoLineAdapter < Android::Widget::BaseAdapter
   attr_accessor :button_map, :text_map, :context
 
   def getCount()
-    UIState.current_state.display_values.size
+    UIState.current.display_values.size
   end
 
   def getItem(position)
-    UIState.current_state.display_values[position][:secondary]
+    UIState.current.display_values[position][:secondary]
   end
 
   def getItemId(position)
@@ -85,20 +87,20 @@ class TwoLineAdapter < Android::Widget::BaseAdapter
   end
 
   def onCheckedChanged(button, isChecked)
-    context.toggle_state(self.button_map.indexOf(button))
-    UIState.current_state.activity.adapter.notifyDataSetChanged()
+    context.toggle_state(button_map.indexOf(button))
+    UIState.current.activity.adapter.notifyDataSetChanged()
 
   end
 
   def onClick(view)
-    context.onItemClick(self.context, view, self.text_map.indexOf(view), nil)
+    context.onItemClick(self.context, view, text_map.indexOf(view), nil)
   end
 
   def getView(position, convertView, parent)
     self.button_map ||= []
     self.text_map ||= []
 
-    current_position_state = UIState.current_state.display_values[position]
+    current_position_state = UIState.current.display_values[position]
 
     self.context = context = parent.context
     textView1 = Android::Widget::TextView.new(context)

@@ -1,10 +1,10 @@
 
 class UIState
   class << self
-    def current_state
+    def current
       @@current_state
     end
-    def current_state=(val)
+    def current=(val)
       @@current_state = val
     end
   end
@@ -16,23 +16,26 @@ class UIState
 
   def initialize(an_activity)
     @activity = an_activity
-    @end_time = current_week_end
-    @week = []
-    @day_state = []
-    @reporting_email = ''
+    @reporting_email = activity.storage.get_reporting_email
+    @static_json = activity.storage.load_static_data
 
-    n = 6
-    while n >= 0
-      daytime = @end_time - ((6 - n) * 86400)
-      week[n] = mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
-      day_state[n] = :working if n < 5
-      n -= 1
+    if @static_json && @static_json['current_week']
+      @end_time = UIState.parse_week_end(@static_json['current_week'])
+    else
+      @end_time = current_week_end
     end
 
-    UIState.current_state = self
+    load_week @static_json['current_week']
+
+    if @week.nil?
+      @end_time = current_week_end
+      default_week
+    end
+
+    UIState.current = self
   end
 
-  def mk_day(year, month, day, start_hour, start_min, end_hour, end_min)
+  def self.mk_day(year, month, day, start_hour, start_min, end_hour, end_min)
     [
       Time.new(year, month, day, start_hour, start_min),
       Time.new(year, month, day, end_hour, end_min)
@@ -48,10 +51,6 @@ class UIState
 
   def update_day_state(position)
     day_state[position] = day_state[position] ? nil : :working
-  end
-
-  def update_week_end(new_end)
-    @end_time = Time.parse(new_end)
   end
 
   def current_week_end
@@ -77,6 +76,10 @@ class UIState
     update_display_values
   end
 
+  def current_week_id
+    "#{MONTH[end_time.month - 1][0..2]} #{end_time.day}, #{end_time.year}"
+  end
+
   def update_display_values
     newarr = [
       {primary: day_primary_text(0), secondary: "Monday", state: day_state[0]},
@@ -95,17 +98,60 @@ class UIState
 
   def week_hash
     {
-        week_end: end_time,
-        days: display_values.map do |display_value|
-          { text: display_value[:primary], state: display_value[:state] }
-        end
+      week_end: current_week_id,
+      days: display_values.map do |display_value|
+        { text: display_value[:primary], state: display_value[:state] }
+      end
     }
   end
 
   def static_hash
     {
       reporting_email: reporting_email,
-      current_week: end_time
+      current_week: current_week_id
     }
+  end
+
+  def self.date_format
+    @@dateformat ||= Java::Text::SimpleDateFormat.new("MMM d, yyyy")
+  end
+
+  def self.parse_week_end(end_str)
+    date = date_format.parse(end_str)
+    Time.new(date.year + 1900, date.month, date.date)
+  end
+
+  def switch_weeks(new_week_id)
+    @end_time = UIState.parse_week_end(new_week_id)
+    puts "SWITCH #{end_time}"
+    activity.storage.save_static_state
+    @static_json['current_week'] = new_week_id
+    load_week new_week_id
+    puts "SWITCH II #{end_time}"
+    update_display_values
+    activity.adapter.notifyDataSetChanged()
+  end
+
+  private
+
+  def default_week
+    @week = []
+    @day_state = []
+
+    n = 6
+    while n >= 0
+      daytime = @end_time - ((6 - n) * 86400)
+      week[n] = UIState.mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
+      day_state[n] = :working if n < 5
+      n -= 1
+    end
+  end
+
+  def load_week(week_id)
+    @week_info = activity.storage.load_week_data(week_id)
+    @week = @week_info[:week]
+    @day_state = @week_info[:day_state]
+    default_week if @week.nil?
+    puts "LOAD #{@week} #{@day_state}"
   end
 end

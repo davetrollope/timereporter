@@ -3,7 +3,7 @@ TimePickerDialog = Android::App::TimePickerDialog
 class TRTimePicker < Android::App::DialogFragment
 
   def onCreateDialog(savedInstanceState)
-    uistate = UIState.current_state
+    uistate = UIState.current
 
     day = uistate.week[uistate.day_of_week]
     entry_num = uistate.time_type == :start ? 0 : 1
@@ -18,7 +18,7 @@ class TRTimePicker < Android::App::DialogFragment
   end
 
   def onTimeSet(view, hour, minute)
-    uistate = UIState.current_state
+    uistate = UIState.current
     if uistate.time_type == :start
       day = uistate.week[uistate.day_of_week]
 
@@ -33,14 +33,15 @@ class TRTimePicker < Android::App::DialogFragment
     uistate.end_hour = hour
     uistate.end_minute = minute
 
-    # Move to TRUIState as update?
+    # Move to UIState as update?
     current_day = uistate.week[uistate.day_of_week]
-    uistate.week[uistate.day_of_week] = uistate.mk_day(current_day[0].year, current_day[0].month, current_day[0].day,
+    uistate.week[uistate.day_of_week] = UIState.mk_day(current_day[0].year, current_day[0].month, current_day[0].day,
                                                        uistate.start_hour, uistate.start_minute,
                                                        uistate.end_hour, uistate.end_minute)
 
     uistate.update_day_state(uistate.day_of_week) if uistate.day_state[uistate.day_of_week] != :working
     uistate.update_display_values
     uistate.activity.adapter.notifyDataSetChanged()
+    uistate.activity.storage.save_week_state
   end
 end

@@ -12,4 +12,5 @@ Motion::Project::App.setup do |app|
   # Use `rake config' to see complete project settings.
   app.name = 'TimeReporter'
   app.package = 'com.fsmltechnologies.timereporter'
+  app.api_version = "23"
 end

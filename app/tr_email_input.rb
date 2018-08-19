@@ -1,7 +1,7 @@
 class TREmailInput < Android::App::DialogFragment
 
   def onCreateDialog(savedInstanceState)
-    uistate = UIState.current_state
+    uistate = UIState.current
 
     email_input = Android::Widget::EditText.new(uistate.activity)
     email_input.text = uistate.reporting_email
@@ -17,9 +17,10 @@ class TREmailInput < Android::App::DialogFragment
   end
 
   def onDismiss(this)
-    uistate = UIState.current_state
+    uistate = UIState.current
+    uistate.activity.storage.save_static_state
     return if uistate.reporting_email == ''
-    UIState.current_state.activity.send_email
+    UIState.current.activity.send_email
   end
 end
 
@@ -32,6 +33,6 @@ class EmailTextWatcher
 
   def onTextChanged(s, start, before, count)
     #puts "TEXT CHANGED #{s.toString} #{start} #{before} #{count}"
-    UIState.current_state.reporting_email = s.toString
+    UIState.current.reporting_email = s.toString
   end
 end
