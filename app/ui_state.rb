@@ -19,13 +19,13 @@ class UIState
     @static_json = activity.storage.load_static_data
 
     @reporting_email = @static_json && @static_json['reporting_email'] ? @static_json['reporting_email'] : ''
-    @end_time = if @static_json && @static_json['current_week']
-      UIState.parse_week_end(@static_json['current_week'])
+    if @static_json && @static_json['current_week']
+      @end_time = UIState.parse_week_end(@static_json['current_week'])
+      load_week @static_json['current_week']
     else
-      current_week_end
+      @end_time = current_week_end
     end
-
-    load_week @static_json['current_week']
+    @static_json = {'week' => [], 'current_week' => current_week_id} if @static_json.nil?
 
     if @week.nil?
       @end_time = current_week_end

@@ -89,4 +89,12 @@ class TRStorage
     osw.close()
     json_file.close()
   end
+
+  def self.clear_files(context)
+    dirlist = context.fileList()
+    puts "DIRLIST #{dirlist}"
+    dirlist.each do |file|
+      context.deleteFile file
+    end
+  end
 end

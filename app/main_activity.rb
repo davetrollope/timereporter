@@ -43,24 +43,25 @@ class MainActivity < Android::App::Activity
   end
 
   def send_email
-    email_body = ''
     display = UIState.current.display_values
+    email_body = "Week Ending #{UIState.current.current_week_id}\n"
 
     display.each_with_index {|display, n|
       if n <= 6
         email_body += display[:secondary] + ": " + display[:primary] + "\n"
       end
     }
-    puts email_body
     begin
+      mailto = "mailto:#{uistate.reporting_email}" +
+          "?subject=" + Android::Net::Uri.encode("Time Report") +
+          "&body=" + Android::Net::Uri.encode(email_body)
+
       intent = Intent.new(Intent::ACTION_SENDTO)
-      intent.setType("message/rfc822")
-      intent.putExtra(Intent::EXTRA_EMAIL, [uistate.reporting_email])
-      intent.putExtra(Intent::EXTRA_SUBJECT, "Time Report")
-      intent.putExtra(Intent::EXTRA_TEXT, email_body)
+      intent.setData(Android::Net::Uri.parse(mailto.toString))
+
       Toast.makeText(self, "Switching to email", Toast::LENGTH_SHORT).show();
 
-      startActivity(Intent.createChooser(intent, "Send mail..."))
+      startActivity(intent)
     rescue Android::Content::ActivityNotFoundException
       Toast.makeText(self, "There are no email clients installed.", Toast::LENGTH_SHORT).show();
     end

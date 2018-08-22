@@ -1,7 +1,6 @@
 TimePickerDialog = Android::App::TimePickerDialog
 
 class TRTimePicker < Android::App::DialogFragment
-
   def onCreateDialog(savedInstanceState)
     uistate = UIState.current
 

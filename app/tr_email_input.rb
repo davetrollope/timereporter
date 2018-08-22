@@ -15,7 +15,6 @@ class TREmailInput < Android::App::DialogFragment
     uistate = UIState.current
 
     builder = Android::App::AlertDialog::Builder.new(uistate.activity)
-    inflater = uistate.activity.getLayoutInflater
     builder.setMessage('Email to:')
     builder.setPositiveButton(Android::R::String::Ok, EmailDialogInterface.new)
     builder.setNegativeButton(Android::R::String::Cancel, EmailDialogInterface.new)
