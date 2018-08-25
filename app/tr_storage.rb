@@ -48,9 +48,8 @@ class TRStorage
         @daytime += 86400 # 1 day
 
         @day_state[n] = :working if day_data["state"] == "working"
-        { week: @week, day_state: @day_state}
       else
-        { week: nil, day_state: nil }
+        @week[n] = UIState.default_day(@end_time, n)
       end
     end
 

@@ -75,7 +75,7 @@ end
 class TwoLineAdapter < Android::Widget::BaseAdapter
   attr_accessor :button_map, :text_map, :context
 
-  def getCount()
+  def getCount
     UIState.current.display_values.size
   end
 
@@ -90,7 +90,6 @@ class TwoLineAdapter < Android::Widget::BaseAdapter
   def onCheckedChanged(button, isChecked)
     context.toggle_state(button_map.indexOf(button))
     UIState.current.activity.adapter.notifyDataSetChanged()
-
   end
 
   def onClick(view)

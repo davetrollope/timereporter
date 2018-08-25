@@ -130,6 +130,11 @@ class UIState
     activity.adapter.notifyDataSetChanged()
   end
 
+  def self.default_day(end_time, n)
+    daytime = end_time - ((6 - n) * 86400)
+    UIState.mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
+  end
+
   private
 
   def default_week
@@ -138,8 +143,7 @@ class UIState
 
     n = 6
     while n >= 0
-      daytime = @end_time - ((6 - n) * 86400)
-      week[n] = UIState.mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
+      @week[n] = UIState.default_day(@end_time, n)
       day_state[n] = :working if n < 5
       n -= 1
     end
