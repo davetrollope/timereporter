@@ -5,14 +5,20 @@ class MainActivity < Android::App::Activity
   attr_accessor :uistate, :display, :storage
 
   def onCreate(savedInstanceState)
+    puts "NEW ACTIVITY"
+    Android::Util::Log.i "TimeReporter::MainActivity#onCreate", "init"
     @storage = TRStorage.new self
+    Android::Util::Log.i "TimeReporter::MainActivity#onCreate", "init state"
     @uistate = UIState.new(self)
+    Android::Util::Log.i "TimeReporter::MainActivity#onCreate", "super"
     super
 
+    Android::Util::Log.i "TimeReporter::MainActivity#onCreate", "list"
     list = Android::Widget::ListView.new(self)
     list.adapter = adapter
     list.onItemClickListener = self
     self.contentView = list
+    Android::Util::Log.i "TimeReporter::MainActivity#onCreate", "start"
   end
 
   def adapter

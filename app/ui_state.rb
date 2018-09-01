@@ -18,11 +18,20 @@ class UIState
     @activity = an_activity
     @static_json = activity.storage.load_static_data
 
+    if @static_json
+      @day_of_week = @static_json['day_of_week'] if @static_json['day_of_week']
+      @time_type = @static_json['time_type'].to_sym if @static_json['time_type']
+      @start_hour = @static_json['start_hour'] if @static_json['start_hour']
+      @start_minute = @static_json['start_minute'] if @static_json['start_minute']
+    end
+
     @reporting_email = @static_json && @static_json['reporting_email'] ? @static_json['reporting_email'] : ''
     if @static_json && @static_json['current_week']
+      puts "INIT A"
       @end_time = UIState.parse_week_end(@static_json['current_week'])
       load_week @static_json['current_week']
     else
+      puts "INIT B"
       @end_time = current_week_end
     end
     @static_json = {'week' => [], 'current_week' => current_week_id} if @static_json.nil?
@@ -47,6 +56,7 @@ class UIState
     @hour = hour
     @minute = minute
     @time_type = time_type
+    activity.storage.save_static_state
   end
 
   def update_day_state(position)
@@ -108,7 +118,13 @@ class UIState
   def static_hash
     {
       reporting_email: reporting_email,
-      current_week: current_week_id
+      current_week: current_week_id,
+
+      # Needed when presenting a dialog and a screen rotation occurs
+      day_of_week: day_of_week,
+      time_type: time_type,
+      start_hour: start_hour,
+      start_minute: start_minute
     }
   end
 

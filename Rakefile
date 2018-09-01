@@ -18,8 +18,8 @@ Motion::Project::App.setup do |app|
   # https://github.com/HipByte/Flow/pull/64
   app.assets_dirs.delete('resources')
   app.resources_dirs << './resources'
-  app.version_code = 1
-  app.version_name = "1.0"
+  app.version_code = 3
+  app.version_name = "1.0b"
 
   app.release_keystore("/Users/dave/keystores/timereporter.keystore", "timereporter_key")
 end
