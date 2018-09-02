@@ -17,7 +17,7 @@ class UIState
   def initialize(an_activity)
     @activity = an_activity
     @static_json = activity.storage.load_static_data
-    @alert_button_id = nil # For TREmailInput, does not need persisting
+    @alert_button_id = nil # For TREmailInput to survive rotation, does not need persisting
 
     if @static_json
       @day_of_week = @static_json['day_of_week'] if @static_json['day_of_week']
@@ -28,11 +28,9 @@ class UIState
 
     @reporting_email = @static_json && @static_json['reporting_email'] ? @static_json['reporting_email'] : ''
     if @static_json && @static_json['current_week']
-      puts "INIT A"
       @end_time = UIState.parse_week_end(@static_json['current_week'])
       load_week @static_json['current_week']
     else
-      puts "INIT B"
       @end_time = current_week_end
     end
     @static_json = {'week' => [], 'current_week' => current_week_id} if @static_json.nil?
@@ -152,6 +150,24 @@ class UIState
     UIState.mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
   end
 
+  def self.interval_string(interval)
+    hours = (interval / 60 / 60).to_i
+    mins = (interval / 60 % 60).to_i
+    return "None" if hours + mins == 0
+    
+    mins == 0 ? "#{hours} hour#{pluralize(hours)}" : "#{hours} hours #{mins} min#{pluralize(mins)}"
+  end
+
+  def total_time
+    week.map.with_index do |day, n|
+      if n <= 6 && day_state[n] == :working
+        day[1] - day[0]
+      else
+        0
+      end
+    end.inject :+
+  end
+
   private
 
   def default_week
@@ -172,5 +188,9 @@ class UIState
     @day_state = @week_info[:day_state]
     default_week if @week.nil?
     puts "LOAD #{@week} #{@day_state}"
+  end
+
+  def self.pluralize(val)
+    val > 1 ? 's' : ''
   end
 end

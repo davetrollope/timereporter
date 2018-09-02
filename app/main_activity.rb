@@ -50,13 +50,17 @@ class MainActivity < Android::App::Activity
 
   def send_email
     display = UIState.current.display_values
-    email_body = "Week Ending #{UIState.current.current_week_id}\n"
+    email_body = "Week Ending: #{UIState.current.current_week_id}\n"
 
     display.each_with_index {|display, n|
       if n <= 6
         email_body += display[:secondary] + ": " + display[:primary] + "\n"
       end
     }
+
+    email_body += "Total Time: #{UIState.interval_string(UIState.current.total_time)}\n"
+    puts "EMAIL:\n#{email_body}"
+
     begin
       mailto = "mailto:#{uistate.reporting_email}" +
           "?subject=" + Android::Net::Uri.encode("Time Report") +
