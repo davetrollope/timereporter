@@ -12,11 +12,12 @@ class UIState
   attr_accessor :day_of_week, :hour, :minute, :time_type,
                 :start_hour, :start_minute, :end_hour, :end_minute,
                 :end_time, :week, :day_state,
-                :activity, :reporting_email
+                :activity, :reporting_email, :alert_button_id
 
   def initialize(an_activity)
     @activity = an_activity
     @static_json = activity.storage.load_static_data
+    @alert_button_id = nil # For TREmailInput, does not need persisting
 
     if @static_json
       @day_of_week = @static_json['day_of_week'] if @static_json['day_of_week']

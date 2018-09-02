@@ -1,23 +1,12 @@
 class TREmailInput < Android::App::DialogFragment
 
-  class << self
-    def send_email
-      @@send_email
-    end
-    def send_email=(val)
-      @@send_email = val
-    end
-  end
-
   def onCreateDialog(savedInstanceState)
-    @@send_email = false
-
     uistate = UIState.current
 
     builder = Android::App::AlertDialog::Builder.new(uistate.activity)
     builder.setMessage('Email to:')
-    builder.setPositiveButton(Android::R::String::Ok, EmailDialogInterface.new)
-    builder.setNegativeButton(Android::R::String::Cancel, EmailDialogInterface.new)
+    builder.setPositiveButton(Android::R::String::Ok, self)
+    builder.setNegativeButton(Android::R::String::Cancel, self)
 
     email_input = Android::Widget::EditText.new(uistate.activity)
     email_input.text = uistate.reporting_email
@@ -33,9 +22,16 @@ class TREmailInput < Android::App::DialogFragment
   def onDismiss(this)
     uistate = UIState.current
     uistate.activity.storage.save_static_state
-    puts "DISMISS #{uistate.reporting_email} #{TREmailInput.send_email}"
+
+    send_email = uistate.alert_button_id == -1
+    puts "DISMISS #{uistate.reporting_email} #{send_email}"
     return if uistate.reporting_email == ''
-    UIState.current.activity.send_email if TREmailInput.send_email
+    UIState.current.activity.send_email if send_email
+  end
+
+  def onClick(dialog, id)
+    UIState.current.alert_button_id = id
+    dismiss
   end
 end
 
@@ -52,10 +48,3 @@ class EmailTextWatcher
   end
 end
 
-class EmailDialogInterface
-  def onClick(dialog, id)
-    puts "DIALOG CLICK ID #{id == -1}"
-    TREmailInput.send_email = id == -1
-    dialog.dismiss
-  end
-end
