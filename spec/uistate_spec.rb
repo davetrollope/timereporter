@@ -1,12 +1,12 @@
 describe UIState do
   describe "Basic Unit Tests" do
     class MockStorage
-      def initialize(empty=false)
-        @empty = empty
+      def initialize(dataset=:static_only)
+        @dataset = dataset
       end
 
       def load_static_data
-        return nil if @empty
+        return nil if @dataset == :init
 
         {
             'reporting_email' => 'test@mock.com',
@@ -21,7 +21,25 @@ describe UIState do
       end
 
       def load_week_data(week_id)
-        { week: nil, daytime: nil }
+        return { week: nil, daytime: nil } if @dataset != :week
+
+        {
+            week: [
+                [Time.new(2018, 8, 10, 8, 0), Time.new(2018, 8, 10, 17, 0)],
+                [Time.new(2018, 8, 11, 9, 0), Time.new(2018, 8, 10, 16, 0)],
+                [Time.new(2018, 8, 12, 10, 0), Time.new(2018, 8, 10, 16, 0)],
+                [Time.new(2018, 8, 13, 11, 0), Time.new(2018, 8, 10, 15, 0)],
+                [Time.new(2018, 8, 14, 12, 30), Time.new(2018, 8, 10, 15, 30)],
+                [Time.new(2018, 8, 15, 8, 0), Time.new(2018, 8, 10, 17, 0)],
+                [Time.new(2018, 8, 16, 8, 0), Time.new(2018, 8, 10, 17, 0)],
+            ],
+            day_state: [
+                :working, nil, :working, nil, :working, nil, nil
+            ],
+            daytime: nil,
+            week_id: 'Sep 16, 2018',
+            end_time: Time.new(2018, 8, 16),
+        }
       end
     end
     class MockActivity
@@ -32,47 +50,10 @@ describe UIState do
       end
     end
 
-    it "can be created with static state" do
-      activity = MockActivity.new(MockStorage.new)
-      uistate = UIState.new(activity)
-
-      uistate.activity.should.equal activity
-      UIState.current.should.equal uistate
-      uistate.reporting_email.should.equal 'test@mock.com'
-
-      uistate.current_week_id.should.equal 'Sep 16, 2018'
-
-      uistate.static_hash.should.equal(
-          {
-              reporting_email: uistate.reporting_email,
-              current_week: uistate.current_week_id,
-              day_of_week: 0,
-              time_type: nil,
-              start_hour: 8,
-              start_minute: 0
-          }
-      )
-      uistate.week_hash.should.equal(
-          {
-              week_end: uistate.current_week_id,
-              days: [{:text => "08:00 - 17:00", :state => :working},
-                     {:text => "08:00 - 17:00", :state => :working},
-                     {:text => "08:00 - 17:00", :state => :working},
-                     {:text => "08:00 - 17:00", :state => :working},
-                     {:text => "08:00 - 17:00", :state => :working},
-                     {:text => "Off", :state => nil},
-                     {:text => "Off", :state => nil},
-                     {:text => "16 September", :state => nil},
-                     {:text => "Send", :state => nil}
-              ]
-          }
-      )
-    end
-
     MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
     it "can be created with default state" do
-      activity = MockActivity.new(MockStorage.new(true))
+      activity = MockActivity.new(MockStorage.new(:init))
       uistate = UIState.new(activity)
 
       uistate.activity.should.equal activity
@@ -113,6 +94,81 @@ describe UIState do
       )
 
     end
+
+    it "can be created with static state" do
+      activity = MockActivity.new(MockStorage.new)
+      uistate = UIState.new(activity)
+
+      uistate.activity.should.equal activity
+      UIState.current.should.equal uistate
+      uistate.reporting_email.should.equal 'test@mock.com'
+
+      uistate.current_week_id.should.equal 'Sep 16, 2018'
+
+      uistate.static_hash.should.equal(
+          {
+              reporting_email: uistate.reporting_email,
+              current_week: uistate.current_week_id,
+              day_of_week: 0,
+              time_type: nil,
+              start_hour: 8,
+              start_minute: 0
+          }
+      )
+      uistate.week_hash.should.equal(
+          {
+              week_end: uistate.current_week_id,
+              days: [{:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "Off", :state => nil},
+                     {:text => "Off", :state => nil},
+                     {:text => "16 September", :state => nil},
+                     {:text => "Send", :state => nil}
+              ]
+          }
+      )
+    end
+
+    it "can be created with state data for a loaded week" do
+      activity = MockActivity.new(MockStorage.new(:week))
+      uistate = UIState.new(activity)
+
+      uistate.activity.should.equal activity
+      UIState.current.should.equal uistate
+      uistate.reporting_email.should.equal 'test@mock.com'
+
+      uistate.current_week_id.should.equal 'Sep 16, 2018'
+
+      uistate.static_hash.should.equal(
+          {
+              reporting_email: uistate.reporting_email,
+              current_week: uistate.current_week_id,
+              day_of_week: 0,
+              time_type: nil,
+              start_hour: 8,
+              start_minute: 0
+          }
+      )
+      uistate.week_hash.should.equal(
+          {
+              week_end: uistate.current_week_id,
+              days: [{:text => "08:00 - 17:00", :state => :working},
+                     {:text => "Off", :state => nil},
+                     {:text => "10:00 - 16:00", :state => :working},
+                     {:text => "Off", :state => nil},
+                     {:text => "12:30 - 15:30", :state => :working},
+                     {:text => "Off", :state => nil},
+                     {:text => "Off", :state => nil},
+                     {:text => "16 September", :state => nil},
+                     {:text => "Send", :state => nil}
+              ]
+          }
+      )
+    end
+
   end
 
   describe "Basic Class Tests" do
