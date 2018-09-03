@@ -154,8 +154,8 @@ class UIState
     hours = (interval / 60 / 60).to_i
     mins = (interval / 60 % 60).to_i
     return "None" if hours + mins == 0
-    
-    mins == 0 ? "#{hours} hour#{pluralize(hours)}" : "#{hours} hours #{mins} min#{pluralize(mins)}"
+
+    mins == 0 ? "#{hours} hour#{pluralize(hours)}" : "#{hours} hour#{pluralize(hours)} #{mins} min#{pluralize(mins)}"
   end
 
   def total_time
