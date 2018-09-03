@@ -21,5 +21,5 @@ Motion::Project::App.setup do |app|
   app.version_code = 4
   app.version_name = "1.0"
 
-  app.release_keystore("/Users/dave/keystores/timereporter.keystore", "timereporter_key")
+  app.release_keystore(File.expand_path('~') + "/keystores/timereporter.keystore", "timereporter_key")
 end
