@@ -32,15 +32,41 @@ describe UIState do
       end
     end
 
-    it "can be created with state" do
+    it "can be created with static state" do
       activity = MockActivity.new(MockStorage.new)
       uistate = UIState.new(activity)
 
       uistate.activity.should.equal activity
       UIState.current.should.equal uistate
-
-
       uistate.reporting_email.should.equal 'test@mock.com'
+
+      uistate.current_week_id.should.equal 'Sep 16, 2018'
+
+      uistate.static_hash.should.equal(
+          {
+              reporting_email: uistate.reporting_email,
+              current_week: uistate.current_week_id,
+              day_of_week: 0,
+              time_type: nil,
+              start_hour: 8,
+              start_minute: 0
+          }
+      )
+      uistate.week_hash.should.equal(
+          {
+              week_end: uistate.current_week_id,
+              days: [{:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "08:00 - 17:00", :state => :working},
+                     {:text => "Off", :state => nil},
+                     {:text => "Off", :state => nil},
+                     {:text => "16 September", :state => nil},
+                     {:text => "Send", :state => nil}
+              ]
+          }
+      )
     end
 
     MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -56,7 +82,7 @@ describe UIState do
       current_week_end = uistate.current_week_end
       current_week_end.wday.should.equal(0)
 
-      current_week_end.to_s.should.equal(uistate.end_time.to_s)
+      current_week_end.to_s.should.equal uistate.end_time.to_s
       end_time = uistate.end_time
       end_string = "#{end_time.day} #{MONTH[end_time.month - 1]}"
 

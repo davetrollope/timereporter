@@ -62,7 +62,7 @@ class UIState
     day_state[position] = day_state[position] ? nil : :working
   end
 
-  def current_week_end
+  def current_week_end # probably should be called calendar_week_end
     t = Time.now
     while t.wday != 0
       t += 86400 # 1 day
