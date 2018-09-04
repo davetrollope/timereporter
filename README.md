@@ -41,5 +41,12 @@ For each day of the week you can:
 ### Ruby
 * [Flow](https://github.com/HipByte/Flow) (for JSON)
 
+## Future potential features/updates
 
-
+* Allow folks to set a lunch period (either time range or interval)
+    * Adjust total time accounting for lunch
+    * Allow setting a timer for lunch
+* Add version number info
+* Add user customization to include their name in the report instead of relying on email
+* Allow user to be more specific than working/off. 
+* Allow user to add notes to a timesheet
