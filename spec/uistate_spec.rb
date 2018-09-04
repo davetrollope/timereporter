@@ -26,12 +26,12 @@ describe UIState do
         {
             week: [
                 [Time.new(2018, 8, 10, 8, 0), Time.new(2018, 8, 10, 17, 0)],
-                [Time.new(2018, 8, 11, 9, 0), Time.new(2018, 8, 10, 16, 0)],
-                [Time.new(2018, 8, 12, 10, 0), Time.new(2018, 8, 10, 16, 0)],
-                [Time.new(2018, 8, 13, 11, 0), Time.new(2018, 8, 10, 15, 0)],
-                [Time.new(2018, 8, 14, 12, 30), Time.new(2018, 8, 10, 15, 30)],
-                [Time.new(2018, 8, 15, 8, 0), Time.new(2018, 8, 10, 17, 0)],
-                [Time.new(2018, 8, 16, 8, 0), Time.new(2018, 8, 10, 17, 0)],
+                [Time.new(2018, 8, 11, 9, 0), Time.new(2018, 8, 11, 16, 0)],
+                [Time.new(2018, 8, 12, 10, 0), Time.new(2018, 8, 12, 16, 0)],
+                [Time.new(2018, 8, 13, 11, 0), Time.new(2018, 8, 13, 15, 0)],
+                [Time.new(2018, 8, 14, 12, 30), Time.new(2018, 8, 14, 15, 30)],
+                [Time.new(2018, 8, 15, 8, 0), Time.new(2018, 8, 15, 17, 0)],
+                [Time.new(2018, 8, 16, 8, 0), Time.new(2018, 8, 16, 17, 0)],
             ],
             day_state: [
                 :working, nil, :working, nil, :working, nil, nil
@@ -60,7 +60,7 @@ describe UIState do
       UIState.current.should.equal uistate
       uistate.reporting_email.should.equal ''
 
-      current_week_end = uistate.current_week_end
+      current_week_end = UIState.send :calendar_week_end
       current_week_end.wday.should.equal(0)
 
       current_week_end.to_s.should.equal uistate.end_time.to_s
@@ -93,6 +93,7 @@ describe UIState do
           }
       )
 
+      (uistate.total_time / 60 / 60).to_i.should.equal(45)
     end
 
     it "can be created with static state" do
@@ -130,6 +131,7 @@ describe UIState do
               ]
           }
       )
+      (uistate.total_time / 60 / 60).to_i.should.equal(45)
     end
 
     it "can be created with state data for a loaded week" do
@@ -167,8 +169,8 @@ describe UIState do
               ]
           }
       )
+      (uistate.total_time / 60 / 60).to_i.should.equal(18)
     end
-
   end
 
   describe "Basic Class Tests" do

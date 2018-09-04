@@ -31,18 +31,39 @@ class UIState
       @end_time = UIState.parse_week_end(@static_json['current_week'])
       load_week @static_json['current_week']
     else
-      @end_time = current_week_end
+      @end_time = UIState.calendar_week_end
     end
     @static_json = {'week' => [], 'current_week' => current_week_id} if @static_json.nil?
 
     if @week.nil?
-      @end_time = current_week_end
+      @end_time = UIState.calendar_week_end
       default_week
     end
 
     UIState.current = self
   end
 
+  # General operations
+  def switch_weeks(new_week_id)
+    @end_time = UIState.parse_week_end(new_week_id)
+    activity.storage.save_static_state
+    @static_json['current_week'] = new_week_id
+    load_week new_week_id
+    update_display_values
+    activity.adapter.notifyDataSetChanged()
+  end
+
+  def total_time
+    week.map.with_index do |day, n|
+      if n <= 6 && day_state[n] == :working
+        day[1] - day[0]
+      else
+        0
+      end
+    end.inject :+
+  end
+
+  # Data accessors
   def self.mk_day(year, month, day, start_hour, start_min, end_hour, end_min)
     [
       Time.new(year, month, day, start_hour, start_min),
@@ -50,26 +71,17 @@ class UIState
     ]
   end
 
-  def update_day(day_of_week, hour, minute, time_type)
-    @day_of_week = day_of_week
-    @hour = hour
-    @minute = minute
-    @time_type = time_type
-    activity.storage.save_static_state
+  def self.default_day(end_time, n)
+    daytime = end_time - ((6 - n) * 86400)
+    UIState.mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
   end
 
-  def update_day_state(position)
-    day_state[position] = day_state[position] ? nil : :working
+  def self.parse_week_end(end_str)
+    date = date_format.parse(end_str)
+    Time.new(date.year + 1900, date.month, date.date)
   end
 
-  def current_week_end # probably should be called calendar_week_end
-    t = Time.now
-    while t.wday != 0
-      t += 86400 # 1 day
-    end
-    t
-  end
-
+  # Display helpers/Default formatting
   def day_range(range)
     "#{range[0].hour.to_s.rjust(2,'0')}:#{range[0].min.to_s.rjust(2,'0')} - " +
         "#{range[1].hour.to_s.rjust(2,'0')}:#{range[1].min.to_s.rjust(2,'0')}"
@@ -89,6 +101,31 @@ class UIState
     "#{MONTH[end_time.month - 1][0..2]} #{end_time.day}, #{end_time.year}"
   end
 
+  def self.date_format
+    @@dateformat ||= Java::Text::SimpleDateFormat.new("MMM d, yyyy")
+  end
+
+  def self.interval_string(interval)
+    hours = (interval / 60 / 60).to_i
+    mins = (interval / 60 % 60).to_i
+    return "None" if hours + mins == 0
+
+    mins == 0 ? "#{hours} hour#{pluralize(hours)}" : "#{hours} hour#{pluralize(hours)} #{mins} min#{pluralize(mins)}"
+  end
+
+  # Update operations
+  def update_day(day_of_week, hour, minute, time_type)
+    @day_of_week = day_of_week
+    @hour = hour
+    @minute = minute
+    @time_type = time_type
+    activity.storage.save_static_state
+  end
+
+  def update_day_state(position)
+    day_state[position] = day_state[position] ? nil : :working
+  end
+
   def update_display_values
     newarr = [
       {primary: day_primary_text(0), secondary: "Monday", state: day_state[0]},
@@ -105,67 +142,27 @@ class UIState
     @display
   end
 
+  # Methods used for serializing/storing state
   def week_hash
     {
-      week_end: current_week_id,
-      days: display_values.map do |display_value|
-        { text: display_value[:primary], state: display_value[:state] }
-      end
+        week_end: current_week_id,
+        days: display_values.map do |display_value|
+          { text: display_value[:primary], state: display_value[:state] }
+        end
     }
   end
 
   def static_hash
     {
-      reporting_email: reporting_email,
-      current_week: current_week_id,
+        reporting_email: reporting_email,
+        current_week: current_week_id,
 
-      # Needed when presenting a dialog and a screen rotation occurs
-      day_of_week: day_of_week,
-      time_type: time_type,
-      start_hour: start_hour,
-      start_minute: start_minute
+        # Needed when presenting a dialog and a screen rotation occurs
+        day_of_week: day_of_week,
+        time_type: time_type,
+        start_hour: start_hour,
+        start_minute: start_minute
     }
-  end
-
-  def self.date_format
-    @@dateformat ||= Java::Text::SimpleDateFormat.new("MMM d, yyyy")
-  end
-
-  def self.parse_week_end(end_str)
-    date = date_format.parse(end_str)
-    Time.new(date.year + 1900, date.month, date.date)
-  end
-
-  def switch_weeks(new_week_id)
-    @end_time = UIState.parse_week_end(new_week_id)
-    activity.storage.save_static_state
-    @static_json['current_week'] = new_week_id
-    load_week new_week_id
-    update_display_values
-    activity.adapter.notifyDataSetChanged()
-  end
-
-  def self.default_day(end_time, n)
-    daytime = end_time - ((6 - n) * 86400)
-    UIState.mk_day(daytime.year, daytime.month, daytime.day, 8, 0, 17, 0)
-  end
-
-  def self.interval_string(interval)
-    hours = (interval / 60 / 60).to_i
-    mins = (interval / 60 % 60).to_i
-    return "None" if hours + mins == 0
-
-    mins == 0 ? "#{hours} hour#{pluralize(hours)}" : "#{hours} hour#{pluralize(hours)} #{mins} min#{pluralize(mins)}"
-  end
-
-  def total_time
-    week.map.with_index do |day, n|
-      if n <= 6 && day_state[n] == :working
-        day[1] - day[0]
-      else
-        0
-      end
-    end.inject :+
   end
 
   private
@@ -182,15 +179,23 @@ class UIState
     end
   end
 
+  def self.pluralize(val)
+    val > 1 ? 's' : ''
+  end
+
+  def self.calendar_week_end
+    t = Time.now
+    while t.wday != 0
+      t += 86400 # 1 day
+    end
+    t
+  end
+
   def load_week(week_id)
     @week_info = activity.storage.load_week_data(week_id)
     @week = @week_info[:week]
     @day_state = @week_info[:day_state]
     default_week if @week.nil?
     puts "LOAD #{@week} #{@day_state}"
-  end
-
-  def self.pluralize(val)
-    val > 1 ? 's' : ''
   end
 end

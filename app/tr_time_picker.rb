@@ -3,7 +3,6 @@ TimePickerDialog = Android::App::TimePickerDialog
 class TRTimePicker < Android::App::DialogFragment
   def onCreateDialog(savedInstanceState)
     uistate = UIState.current
-    puts "DOW #{uistate.day_of_week} #{uistate.end_time}"
 
     day = uistate.week[uistate.day_of_week]
     entry_num = uistate.time_type == :start ? 0 : 1
